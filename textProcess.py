@@ -1,4 +1,4 @@
-#DUMB function that creates an array of colors out of a given string from a video
+#Function that creates an array of colors out of a given string from a video
 def lineToArr(line):
     colors = [None] * len(line)
     skip = False
@@ -41,7 +41,6 @@ def getLineDiff(lineOne, lineTwo, color):
         lOne = lineToArr(lineOne)
         lTwo = lineToArr(lineTwo)
 
-        #iterate through the array and do... suspicious things. that returns a string
         for i in range(len(lOne)):
             p1 = lOne[i]
             p2 = lTwo[i]
@@ -57,7 +56,6 @@ def getLineDiff(lineOne, lineTwo, color):
                 result += f"\033[48;2;{p1[0]};{p1[1]};{p1[2]}m  "
                 count = 0
     else:
-        #iteate through the array and do... suspicious things
         for i in range(len(lineOne)):
             p1 = lineOne[i]
             p2 = lineTwo[i]

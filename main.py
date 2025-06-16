@@ -26,7 +26,6 @@ path = config.videosFolder + "\\" + config.videoStr + "." + config.videoExt
 begin = time.time()  # remove if needed
 cap = cv2.VideoCapture(path)  # cap is the video object
 
-#do the stuff - the dumb idiot stuff
 if cap.isOpened():
     print("\33[?25l")  # hide cursor
 
@@ -63,7 +62,6 @@ if cap.isOpened():
     if not config.mute:
         audio.playAudio(playback)  # start audio
 
-    # this prints stuff - try and avoid cumilative drift in the sleep- DONT MESS WITH THIS IT WILL EXPLODE
     # see https://stackoverflow.com/questions/67329314/creating-a-precise-time-interval-with-no-drift-over-long-periods-of-time
     begin = time.time()
     for i in range(len(frameDiffs)):
