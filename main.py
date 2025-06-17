@@ -31,7 +31,6 @@ if cap.isOpened():
 
     frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
     fps = cap.get(cv2.CAP_PROP_FPS)
-    skip = None  # skip is the amount of frames skipped to adhere to desired fps
 
     #calc frame stuff
     if config.fpsLimit and not config.importing:
