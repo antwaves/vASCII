@@ -1,16 +1,15 @@
-import moviepy
+from pydub import AudioSegment
 import config
 
 
 # takes the video and creates a new mp3 file
 def loadAudio(path):
-    clip = moviepy.AudioFileClip(path)
-    clip.write_audiofile(f"{config.audioFolder}\\{config.videoStr}.mp3", logger=None) 
-    clip.close()
+    video = AudioSegment.from_file(path, format=config.videoExt)
+    video.export(f"{config.audioFolder}\\{config.videoStr}.{config.audioExt}", format=config.audioExt)
 
 
 # plays audio. ad
-def playAudio(playback):
+def playAudio():
     if not playback.active:
         playback.load_file(path_to_file=f"{config.audioFolder}\\{config.videoStr}.{config.audioExt}")
 
@@ -19,8 +18,9 @@ def playAudio(playback):
     else:
         playback.play()
 
+
 #pause the audioooo
-def pauseAudio(playback):
+def pauseAudio():
     if not playback.active:
         playback.load_file(path_to_file=f"{config.audioFolder}\\{config.videoStr}.{config.audioExt}")
     playback.pause()
