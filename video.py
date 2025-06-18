@@ -3,6 +3,7 @@ import threading
 import just_playback
 
 import videoProcess
+import helper
 import audio
 
 class Video:
@@ -11,7 +12,7 @@ class Video:
         self.cap = None
 
         self.mute = False
-        self.audio = just_playback.Playback() if not mute else None
+        self.audio = just_playback.Playback() if not self.mute else None
 
         self.size = 100
         self.resizeToHeight = False
@@ -39,36 +40,40 @@ class Video:
         self.cap = cv2.VideoCapture(path)
 
         if self.cap.isOpened():
-            self.frameCount = int(cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            self.fps = cap.get(cv2.CAP_PROP_FPS)
+            self.frameCount = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            self.fps = self.cap.get(cv2.CAP_PROP_FPS)
 
             if self.fpsLimit:
                 self.skip = self.fps // self.fpsLimit  
                 self.fps //= self.skip
-                self.frameCount //= self.skip
+                self.frameCount = int(self.frameCount // self.skip)
                 self.frameTime = 1 / self.fps
         else:
             raise FileExistsError 
 
 
-    def load_frames(self, cap: cv2.VideoCapture, logger: Function = None) -> None:
-        if not self.mute:
-            #FIX ME!
-            t1 = threading.Thread(target=self.audio.loadAudio, args=(self.videoPath,))
-            t1.start() 
+    def load_frames(self, logger = None) -> None:
+        # if not self.mute:
+        #     #FIX ME!
+        #     t1 = threading.Thread(target=self.audio.loadAudio, args=(self.videoPath,))
+        #     t1.start() 
         
         if self.cap:
-            videoProcess.processVideo(self.cap, self.frames, self.frameDiffs, self.frameCount)
+            videoProcess.processVideo(self, logger)
+        else:
+            raise "VideoMissingError"
         
-        if not self.mute:
-            t1.join()
+        # if not self.mute:
+        #     t1.join()
     
+
+    def import_frames(self, logger = None) -> None:
+        pass
 
     def play_video(self):
         pass
 
 
 v = Video()
-v.from_file("")
-            
-
+v.from_file("videos/taxes.mp4")
+v.load_frames(helper.log)

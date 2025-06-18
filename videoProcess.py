@@ -6,14 +6,14 @@ import textProcess
 import helper
 
 # converts an image to ANSI color escape codes
-def imToTextColor(img, frames):
+def imToTextColor(img, frames, colorReduction):
     rows, cols, _ = img.shape
     output = StringIO()
     output.write(
         "\033[H"
     )  # add ANSI escape code to move cursor to top left of the screen for printing
 
-    img = (img // config.colorReduction) * config.colorReduction
+    img = (img // colorReduction) * colorReduction
     last_color = [0, 0, 0]
 
     for i in range(rows):
@@ -52,7 +52,7 @@ def imToText(img, frames):
 
 #get the "difference" between two frames, or in other words, the print needed
 #to transition from the "last" frame to the "current" frame
-def getDifference(current, last):
+def getDifference(current, last, color):
     output = StringIO() #use stringIO for speeeeeeeed
     output.write("\033[H") #add the thing that moves the cursor to the top
 
@@ -63,57 +63,58 @@ def getDifference(current, last):
         if cLines[i] == lLines[i]:
             output.write("\n")
         else:
-            output.write(textProcess.getLineDiff(cLines[i], lLines[i], config.color))
+            output.write(textProcess.getLineDiff(cLines[i], lLines[i], color))
 
     return output.getvalue()
 
 
 # processes a video into either pure text or color
-def processVideo(cap, frames, frameDiffs, frameCount):
-    is_grabbed, frame = cap.read()
-    fps = cap.get(cv2.CAP_PROP_FPS)
+def processVideo(v, logger = None):
+    is_grabbed, frame = v.cap.read()
 
-    if config.fpsLimit and fps > config.fpsLimit:
-        skip = fps // config.fpsLimit
+    # if v.fpsLimit and v.fps > v.fpsLimit:
+    #     skip = v.fps // v.fpsLimit
 
-    # scale down image based on config.size
+    # scale down image based on size
     scale_percent = (
-        config.size / frame.shape[0]
-        if config.resizeToHeight
-        else config.size / frame.shape[1]
+        v.size / frame.shape[0]
+        if v.resizeToHeight
+        else v.size / frame.shape[1]
     )
     dim = (int(frame.shape[1] * scale_percent), int(frame.shape[0] * scale_percent))
 
+    if logger:
+        logger(0, 0, v.frameCount)
     count = 0
-    helper.log(0, frameCount, skip=skip)
-    while is_grabbed:  # iterate through all frames
-        is_grabbed, frame = cap.read()
 
-        if count % 100 == 0:
-            helper.log(count, frameCount, skip=skip)
+    while is_grabbed:  # iterate through all frames
+        is_grabbed, frame = v.cap.read()
+
+        if logger:
+            c = (count / v.skip) if v.skip else count
+            logger(c/v.frameCount, c, v.frameCount, )
 
         # skips frames based on the skip variable... i dont know why i added this comment
-        if skip and count % skip == 0:
+        if v.skip and count % v.skip == 0:
             count += 1
             continue
 
         # resize and convert to text
         if is_grabbed:
             frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
-            if config.color:
-                imToTextColor(frame, frames)
+            if v.color:
+                imToTextColor(frame, v.frames, v.colorReduction)
             else:
-                imToText(frame, frames)
+                imToText(frame, v.frames)
 
-            if skip and count % skip != 0 and len(frames) > 1:
-                frameDiffs.append(getDifference(frames[len(frames) - 1], frames[len(frames) - 2]))
-            elif len(frames) > 1:
-                frameDiffs.append(getDifference(frames[len(frames) - 1], frames[len(frames) - 2]))
-            elif len(frames) == 1:
-                frameDiffs.append(frames[0])
+            if v.skip and count % v.skip != 0 and len(v.frames) > 1:
+                v.frameDiffs.append(getDifference(v.frames[len(v.frames) - 1], v.frames[len(v.frames) - 2], v.color))
+            elif len(v.frames) > 1:
+                v.frameDiffs.append(getDifference(v.frames[len(v.frames) - 1], v.frames[len(v.frames) - 2], v.color))
+            elif len(v.frames) == 1:
+                v.frameDiffs.append(v.frames[0])
         else:
             break
         count += 1
 
-    cap.release()
-    helper.log(count, frameCount, lastFrame=True)
+    v.cap.release()
