@@ -1,7 +1,9 @@
 import cv2
 import time
-import threading
 import just_playback
+
+from concurrent.futures import ThreadPoolExecutor
+from threading import Event
 
 import videoProcess
 import helper
@@ -22,7 +24,7 @@ class Video:
         self.cap = None
 
         self.mute = False
-        self.audio = just_playback.Playback() if not self.mute else None
+        self.audio = just_playback.Playback()
 
         self.size = 100
         self.resizeToHeight = False
@@ -40,12 +42,11 @@ class Video:
         self.frameDiffs = []
 
         self.paused = False
-        self.pauseTime = 0
-
         self.videoPath = None
+        
 
 
-    def from_file(self, path: str) -> None:
+    def from_file(self, path: str):
         self.videoPath = path
         self.cap = cv2.VideoCapture(path)
 
@@ -60,9 +61,11 @@ class Video:
                 self.frameTime = 1 / self.fps
         else:
             raise VideoError(f"FileExistsError: Does '{path}' really exist")
+        
+        return self
 
 
-    def load_frames(self, logger = None) -> None:
+    def load_frames(self, logger = None):
         # if not self.mute:
         #     #FIX ME!
         #     t1 = threading.Thread(target=self.audio.loadAudio, args=(self.videoPath,))
@@ -75,37 +78,34 @@ class Video:
         
         # if not self.mute:
         #     t1.join()
-    
+
+        return self
 
     def import_frames(self, logger = None) -> None:
         pass
 
-    def play_video(self) -> None:
-        print("\33[?25l")
-
-        #if not config.mute:
-            #audio.playAudio(playback)  # start audio
-
-        # see https://stackoverflow.com/questions/67329314/creating-a-precise-time-interval-with-no-drift-over-long-periods-of-time
-        begin = time.time()
+    def print_video(self, offset: float = 0) -> None:
         if not self.frameDiffs:
             raise VideoError("FramesMissingError: Call a frame loading function before printing frames")
-        
+        print("\33[?25l")
+
+        # see https://stackoverflow.com/questions/67329314/creating-a-precise-time-interval-with-no-drift-over-long-periods-of-time
+        begin = time.time()    
         targetTime = 0
         for i in range(len(self.frameDiffs)):
             print(self.frameDiffs[i])
 
             # check if the current time is behind the current expected time, and sleep if so
-            target = (begin + targetTime)
+            target = (begin + targetTime) + offset
             sleepTime = target - time.time()
             if sleepTime > 0:
                 time.sleep(sleepTime)
             
-            targetTime += self.frameTime
+            targetTime += self.frameTime    
+    
+    def play_video(self):
+        pass
 
 
 v = Video()
-v.from_file("videos/taxes.mp4")
-#v.load_frames(helper.log)
-print("ready?")
-v.play_video()
+v.from_file("videos/taxes.mp4").load_frames(helper.log).print_video()
