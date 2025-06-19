@@ -1,10 +1,20 @@
 import cv2
+import time
 import threading
 import just_playback
 
 import videoProcess
 import helper
 import audio
+
+
+class VideoError(Exception):
+    def __init__(self, message):
+        self.message = message
+    
+    def __str__(self):
+        return self.message
+
 
 class Video:
     def __init__(self):
@@ -49,7 +59,7 @@ class Video:
                 self.frameCount = int(self.frameCount // self.skip)
                 self.frameTime = 1 / self.fps
         else:
-            raise FileExistsError 
+            raise VideoError(f"FileExistsError: Does '{path}' really exist")
 
 
     def load_frames(self, logger = None) -> None:
@@ -61,7 +71,7 @@ class Video:
         if self.cap:
             videoProcess.processVideo(self, logger)
         else:
-            raise "VideoMissingError"
+            raise VideoError("VideoMissingError: Call a video loading function before loading frames")
         
         # if not self.mute:
         #     t1.join()
@@ -70,10 +80,32 @@ class Video:
     def import_frames(self, logger = None) -> None:
         pass
 
-    def play_video(self):
-        pass
+    def play_video(self) -> None:
+        print("\33[?25l")
+
+        #if not config.mute:
+            #audio.playAudio(playback)  # start audio
+
+        # see https://stackoverflow.com/questions/67329314/creating-a-precise-time-interval-with-no-drift-over-long-periods-of-time
+        begin = time.time()
+        if not self.frameDiffs:
+            raise VideoError("FramesMissingError: Call a frame loading function before printing frames")
+        
+        targetTime = 0
+        for i in range(len(self.frameDiffs)):
+            print(self.frameDiffs[i])
+
+            # check if the current time is behind the current expected time, and sleep if so
+            target = (begin + targetTime)
+            sleepTime = target - time.time()
+            if sleepTime > 0:
+                time.sleep(sleepTime)
+            
+            targetTime += self.frameTime
 
 
 v = Video()
 v.from_file("videos/taxes.mp4")
-v.load_frames(helper.log)
+#v.load_frames(helper.log)
+print("ready?")
+v.play_video()
