@@ -3,7 +3,7 @@ import time
 import just_playback
 
 from concurrent.futures import ThreadPoolExecutor
-from threading import Event
+from threading import Thread, Event
 
 import videoProcess
 import helper
@@ -26,7 +26,7 @@ class Video:
         self.mute = False
         self.audio = just_playback.Playback()
 
-        self.size = 100
+        self.size = 50
         self.resizeToHeight = False
 
         self.skip = None
@@ -35,16 +35,16 @@ class Video:
         self.frameTime = None
         self.frameCount = None
 
-        self.color = True
+        self.color = False
         self.colorReduction = 16
 
         self.frames = []
         self.frameDiffs = []
 
-        self.paused = False
-        self.videoPath = None
+        self.paused = Event()
+        self.kill = Event()
+        self.printThread = None
         
-
 
     def from_file(self, path: str):
         self.videoPath = path
@@ -81,31 +81,76 @@ class Video:
 
         return self
 
+
     def import_frames(self, logger = None) -> None:
         pass
 
-    def print_video(self, offset: float = 0) -> None:
+
+    def print_video(self) -> None:
         if not self.frameDiffs:
             raise VideoError("FramesMissingError: Call a frame loading function before printing frames")
         print("\33[?25l")
 
+
         # see https://stackoverflow.com/questions/67329314/creating-a-precise-time-interval-with-no-drift-over-long-periods-of-time
-        begin = time.time()    
+        begin = time.time()   
+        pauseCount = 0 
         targetTime = 0
+
         for i in range(len(self.frameDiffs)):
+            if self.paused.is_set():
+                while self.paused.is_set():
+                    time.sleep(0.05)
+            
+            if self.kill.is_set():
+                break
+
             print(self.frameDiffs[i])
 
             # check if the current time is behind the current expected time, and sleep if so
-            target = (begin + targetTime) + offset
+            target = (begin + targetTime)
             sleepTime = target - time.time()
             if sleepTime > 0:
                 time.sleep(sleepTime)
             
             targetTime += self.frameTime    
     
-    def play_video(self):
-        pass
+
+    def start_video(self) -> None:
+        self.kill.clear()
+        t = Thread(target=self.print_video, args=())
+        t.start()
+        self.printThread = t
+    
+
+    def pause(self) -> None:
+        if self.printThread:
+            self.paused.set()
+    
+
+    def unpause(self) -> None:
+        if self.printThread:
+            self.paused.clear()
+    
+
+    def stop(self) -> None:
+        if self.printThread:
+            self.kill.set()
 
 
 v = Video()
-v.from_file("videos/taxes.mp4").load_frames(helper.log).print_video()
+
+v.from_file("videos/taxes.mp4").load_frames(helper.log).start_video()
+print("WE OUTTT")
+
+time.sleep(2)
+v.pause()
+
+time.sleep(5)
+
+v.unpause()
+
+time.sleep(1)
+
+v.stop()
+
