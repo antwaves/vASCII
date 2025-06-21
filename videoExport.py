@@ -1,17 +1,17 @@
 from io import StringIO
-import helper
+from pathlib import PurePath
 
 #encode a video into text
-def encodeVideo(frames: list, filename: str, fps: int, color: bool) -> None:
-    with open(f"{filename}.txt", 'w') as f:
-        f.write(f"{filename} {color} {fps}\n")
-        f.close()
+def encodeVideo(p: str, video, logger = None) -> None:
+    path = pathlib.PurePath(p)
 
-    with open(f"{filename}.txt", 'a') as f:
+    with open(f"{path}", 'w') as f:
+        f.write(f"{path.name} {video.color} video.{fps} {len(video.frameDiffs)}\n")
+
         skips = 0
         count = 0
 
-        for frame in frames:
+        for frame in video.frameDiffs:
             compressed = StringIO()
             
             for i in range(len(frame)):
@@ -34,19 +34,15 @@ def encodeVideo(frames: list, filename: str, fps: int, color: bool) -> None:
             f.write("\\\n" if not color else "\\\\\n") #write a different frame seperator based on config.color
 
             count += 1  
-            if count % 50 == 0:
-                helper.ieLog("exported", count, fps)
+            
         f.close()
-    
-    helper.ieLog("exported", count, fps)
-    print("")
     
     
 #decode text into a video
-def decodeVideo(filename):
+def decodeVideo(path, logger = None):
     frames = []
 
-    with open(f"{filename}.txt", 'r') as f:
+    with open(path, 'r') as f:
         lines = f.readlines()
         info = lines[0].split()
         filename, color, fps = info[0], False if info[1] == "False" else True, int(float(info[2])) #get the config info
@@ -54,7 +50,7 @@ def decodeVideo(filename):
         f.close()
 
     #write the dumb frames
-    with open(f"{filename}.txt", 'r') as f:
+    with open(path, 'r') as f:
         count = 0
         currentFrame = StringIO()
         breakCheck = "\\\n" if not color else "\\\\\n"
@@ -97,16 +93,10 @@ def decodeVideo(filename):
 
                     currentFrame.write(char + " ")
             else:
-                with open("log.txt", "a") as f:
-                    f.write(currentFrame.getvalue())
-
                 frames.append(currentFrame.getvalue())
                 currentFrame = StringIO()
 
-                count += 1  
-                if count % 50 == 0:
-                    helper.ieLog("imported", count, fps)
+                if logger:
+                    logger("imported", count, fps)
     
-    helper.ieLog("exported", count, fps)
-    print("")
     return frames, [filename, color, fps]

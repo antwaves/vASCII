@@ -1,8 +1,7 @@
 import cv2
 import time
 import just_playback
-
-from concurrent.futures import ThreadPoolExecutor
+from pathlib import PurePath
 from threading import Thread, Event
 
 import videoProcess
@@ -47,8 +46,7 @@ class Video:
         
 
     def from_file(self, path: str):
-        self.videoPath = path
-        self.cap = cv2.VideoCapture(path)
+        self.cap = cv2.VideoCapture(PurePath(path))
 
         if self.cap.isOpened():
             self.frameCount = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
@@ -83,6 +81,10 @@ class Video:
 
 
     def import_frames(self, logger = None) -> None:
+        pass
+    
+
+    def export_frames(self, logger = None) -> None:
         pass
 
 
@@ -140,7 +142,7 @@ class Video:
 
 v = Video()
 
-v.from_file("videos/taxes.mp4").load_frames(helper.log).start_video()
+v.from_file("videos//taxes.mp4").load_frames(helper.log).start_video()
 print("WE OUTTT")
 
 time.sleep(2)
