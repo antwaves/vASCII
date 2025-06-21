@@ -5,6 +5,7 @@ from pathlib import PurePath
 from threading import Thread, Event
 
 import videoProcess
+import videoExport
 import helper
 import audio
 
@@ -72,7 +73,7 @@ class Video:
         if self.cap:
             videoProcess.processVideo(self, logger)
         else:
-            raise VideoError("VideoMissingError: Call a video loading function before loading frames")
+            raise VideoError("VideoMissingError: Video is missing. Call a video loading function before loading frames")
         
         # if not self.mute:
         #     t1.join()
@@ -80,17 +81,20 @@ class Video:
         return self
 
 
-    def import_frames(self, logger = None) -> None:
+    def import_video(self, path: str, logger = None) -> None:
         pass
     
 
-    def export_frames(self, logger = None) -> None:
-        pass
+    def export_video(self, path: str = "output.txt", logger = None) -> None:
+        if self.cap:
+            videoExport.encodeVideo(path, self, logger)
+        else:
+            raise VideoError("VideoMissingError: Video is missing. Call a video loading function before exporting frames")
 
 
     def print_video(self) -> None:
         if not self.frameDiffs:
-            raise VideoError("FramesMissingError: Call a frame loading function before printing frames")
+            raise VideoError("FramesMissingError: Frames are missing. Call a frame loading function before printing frames")
         print("\33[?25l")
 
 
@@ -146,13 +150,7 @@ v.from_file("videos//taxes.mp4").load_frames(helper.log).start_video()
 print("WE OUTTT")
 
 time.sleep(2)
-v.pause()
-
-time.sleep(5)
-
-v.unpause()
-
-time.sleep(1)
-
 v.stop()
+
+v.export_video("test.txt")
 

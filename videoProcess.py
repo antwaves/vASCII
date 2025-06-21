@@ -83,10 +83,7 @@ def processVideo(v, logger = None):
     )
     dim = (int(frame.shape[1] * scale_percent), int(frame.shape[0] * scale_percent))
 
-    if logger:
-        logger(0, 0, v.frameCount)
     count = 0
-
     while is_grabbed:  # iterate through all frames
         is_grabbed, frame = v.cap.read()
 
@@ -102,6 +99,7 @@ def processVideo(v, logger = None):
         # resize and convert to text
         if is_grabbed:
             frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+            
             if v.color:
                 imToTextColor(frame, v.frames, v.colorReduction)
             else:

@@ -2,11 +2,11 @@ from io import StringIO
 from pathlib import PurePath
 
 #encode a video into text
-def encodeVideo(p: str, video, logger = None) -> None:
-    path = pathlib.PurePath(p)
+def encodeVideo(raw_path: str, video, logger = None) -> None:
+    path = PurePath(raw_path)
 
     with open(f"{path}", 'w') as f:
-        f.write(f"{path.name} {video.color} video.{fps} {len(video.frameDiffs)}\n")
+        f.write(f"{path.name} {video.color} {video.fps} {len(video.frameDiffs)}\n")
 
         skips = 0
         count = 0
@@ -31,8 +31,10 @@ def encodeVideo(p: str, video, logger = None) -> None:
                 compressed.write(frame[i])
 
             f.write(compressed.getvalue())
-            f.write("\\\n" if not color else "\\\\\n") #write a different frame seperator based on config.color
+            f.write("\\\n" if not video.color else "\\\\\n") #write a different frame seperator based on color
 
+            if logger:
+                logger(video.frameCount / count, count, video.frameCount)
             count += 1  
             
         f.close()
