@@ -1,5 +1,4 @@
 import threading
-import keyboard
 import time
 
 import just_playback

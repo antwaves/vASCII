@@ -1,14 +1,17 @@
 from pydub import AudioSegment
-import config
-
+from pathlib import PurePath
 
 # takes the video and creates a new mp3 file
-def loadAudio(path):
-    video = AudioSegment.from_file(path, format=config.videoExt)
-    video.export(f"{config.audioFolder}\\{config.videoStr}.{config.audioExt}", format=config.audioExt)
+def loadAudio(video, raw_input_path: str, raw_output_path: str, video_format: str):
+    input_path = PurePath(raw_input_path)
+    output_path = PurePath(raw_output_path)
+
+    video = AudioSegment.from_file(input_path, format=video_format)
+    video.export(output_path, format="mp3")
+    video.audioData = open(output_path, "rb").read().hex()
 
 
-# plays audio. ad
+# plays audio
 def playAudio():
     if not playback.active:
         playback.load_file(path_to_file=f"{config.audioFolder}\\{config.videoStr}.{config.audioExt}")

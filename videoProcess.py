@@ -71,9 +71,6 @@ def getDifference(current, last, color):
 def processVideo(v, logger = None):
     is_grabbed, frame = v.cap.read()
 
-    # if v.fpsLimit and v.fps > v.fpsLimit:
-    #     skip = v.fps // v.fpsLimit
-
     # scale down image based on size
     scale_percent = (
         v.size / frame.shape[0]

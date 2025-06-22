@@ -1,8 +1,10 @@
+import os
 import cv2
 import time
+from threading import Thread, Event
+
 import just_playback
 from pathlib import PurePath
-from threading import Thread, Event
 
 import videoProcess
 import videoExport
@@ -24,7 +26,9 @@ class Video:
         self.cap = None
 
         self.mute = False
-        self.audio = just_playback.Playback()
+        self.audioData = None
+        self.audioOutput = "output.mp3"
+        self.playback = just_playback.Playback()
 
         self.size = 50
         self.resizeToHeight = False
@@ -46,7 +50,8 @@ class Video:
         self.printThread = None
         
 
-    def from_file(self, path: str):
+    def from_file(self, raw_path: str):
+        path = PurePath(raw_path)
         self.cap = cv2.VideoCapture(PurePath(path))
 
         if self.cap.isOpened():
@@ -58,6 +63,9 @@ class Video:
                 self.fps = int(self.fps // self.skip)
                 self.frameCount = int(self.frameCount // self.skip)
                 self.frameTime = 1 / self.fps
+            
+            video_ext = os.path.splitext(str(path))[1][1:]
+            audio.loadAudio(self, path, self.audioOutput, video_ext)
         else:
             raise VideoError(f"FileExistsError: Does '{path}' really exist")
         
@@ -65,18 +73,10 @@ class Video:
 
 
     def load_frames(self, logger = None):
-        # if not self.mute:
-        #     #FIX ME!
-        #     t1 = threading.Thread(target=self.audio.loadAudio, args=(self.videoPath,))
-        #     t1.start() 
-        
         if self.cap:
             videoProcess.processVideo(self, logger)
         else:
             raise VideoError("VideoMissingError: Video is missing. Call a video loading function before loading frames")
-        
-        # if not self.mute:
-        #     t1.join()
 
         return self
 
@@ -95,7 +95,7 @@ class Video:
     def print_video(self) -> None:
         if not self.frameDiffs:
             raise VideoError("FramesMissingError: Frames are missing. Call a frame loading function before printing frames")
-        print("\33[?25l")
+        print("\33[?25l") #hide mouse
 
 
         # see https://stackoverflow.com/questions/67329314/creating-a-precise-time-interval-with-no-drift-over-long-periods-of-time
@@ -146,8 +146,8 @@ class Video:
 
 v = Video()
 
-#v.from_file("videos//taxes.mp4").load_frames(helper.log)
-v.from_import("test.txt")
+v.from_file("videos//taxes.mp4").load_frames(helper.log)
+#v.from_import("test.txt")
 #v.export_video("test.txt", helper.log)
 
-v.start_video()
+#v.start_video()
