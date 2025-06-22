@@ -55,7 +55,7 @@ class Video:
 
             if self.fpsLimit:
                 self.skip = self.fps // self.fpsLimit  
-                self.fps //= self.skip
+                self.fps = int(self.fps // self.skip)
                 self.frameCount = int(self.frameCount // self.skip)
                 self.frameTime = 1 / self.fps
         else:
@@ -81,8 +81,8 @@ class Video:
         return self
 
 
-    def import_video(self, path: str, logger = None) -> None:
-        pass
+    def from_import(self, path: str, logger = None) -> None:
+        videoExport.decodeVideo(path, self, logger)
     
 
     def export_video(self, path: str = "output.txt", logger = None) -> None:
@@ -146,11 +146,10 @@ class Video:
 
 v = Video()
 
-v.from_file("videos//taxes.mp4").load_frames(helper.log).start_video()
-print("WE OUTTT")
+v.from_file("videos//taxes.mp4").load_frames(helper.log)
+#v.export_video("test.txt")
 
-time.sleep(2)
-v.stop()
+#v.from_import("test.txt")
 
-v.export_video("test.txt")
+v.start_video()
 

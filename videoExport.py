@@ -6,7 +6,7 @@ def encodeVideo(raw_path: str, video, logger = None) -> None:
     path = PurePath(raw_path)
 
     with open(f"{path}", 'w') as f:
-        f.write(f"{path.name} {video.color} {video.fps} {len(video.frameDiffs)}\n")
+        f.write(f"{video.color} {video.fps} {len(video.frameDiffs)}\n")
 
         skips = 0
         count = 0
@@ -41,18 +41,19 @@ def encodeVideo(raw_path: str, video, logger = None) -> None:
     
     
 #decode text into a video
-def decodeVideo(path, logger = None):
+def decodeVideo(raw_path, video, logger = None) -> None:
     frames = []
 
+    path = PurePath(raw_path)
     with open(path, 'r') as f:
         lines = f.readlines()
         info = lines[0].split()
-        filename, color, fps = info[0], False if info[1] == "False" else True, int(float(info[2])) #get the config info
-        lines.pop(0)
-        f.close()
 
-    #write the dumb frames
-    with open(path, 'r') as f:
+        color = False if info[0] == "False" else True
+        fps = int(float(info[1]))
+        frameCount = int(info[2])
+        lines.pop(0)
+
         count = 0
         currentFrame = StringIO()
         breakCheck = "\\\n" if not color else "\\\\\n"
@@ -99,6 +100,10 @@ def decodeVideo(path, logger = None):
                 currentFrame = StringIO()
 
                 if logger:
-                    logger("imported", count, fps)
+                    logger(count / frameCount, count, frameCount)
     
-    return frames, [filename, color, fps]
+    
+    video.frameDiffs = frames
+    video.color = color
+    video.fps = fps
+    video.frameTime = 1 / fps
