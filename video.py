@@ -111,7 +111,7 @@ class Video:
             if self.kill.is_set():
                 break
 
-            print(self.frameDiffs[i])
+            print("\033[H" + self.frameDiffs[i])
 
             # check if the current time is behind the current expected time, and sleep if so
             target = (begin + targetTime)
@@ -146,10 +146,8 @@ class Video:
 
 v = Video()
 
-v.from_file("videos//taxes.mp4").load_frames(helper.log)
-#v.export_video("test.txt")
-
-#v.from_import("test.txt")
+#v.from_file("videos//taxes.mp4").load_frames(helper.log)
+v.from_import("test.txt")
+#v.export_video("test.txt", helper.log)
 
 v.start_video()
-

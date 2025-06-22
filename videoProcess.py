@@ -8,10 +8,7 @@ import helper
 # converts an image to ANSI color escape codes
 def imToTextColor(img, frames, colorReduction):
     rows, cols, _ = img.shape
-    output = StringIO()
-    output.write(
-        "\033[H"
-    )  # add ANSI escape code to move cursor to top left of the screen for printing
+    output = StringIO() 
 
     img = (img // colorReduction) * colorReduction
     last_color = [0, 0, 0]
@@ -34,7 +31,6 @@ def imToTextColor(img, frames, colorReduction):
 def imToText(img, frames):
     rows, cols, _ = img.shape
     output = StringIO()
-    output.write("\033[H")  # add ANSI escape code to move cursor to top left of the screen for printing
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     brightValues = ["  ", "- ", "= ", "o ", "O ", "0 ", "% ", "@ "]
@@ -54,10 +50,13 @@ def imToText(img, frames):
 #to transition from the "last" frame to the "current" frame
 def getDifference(current, last, color):
     output = StringIO() #use stringIO for speeeeeeeed
-    output.write("\033[H") #add the thing that moves the cursor to the top
 
     cLines = current.split("\n")
     lLines = last.split("\n")
+
+    with open("log.txt", "a") as f:
+        f.write(cLines[0] + '\n')
+        f.write(lLines[0] + "\n\n")
 
     for i in range(len(cLines)):
         if cLines[i] == lLines[i]:

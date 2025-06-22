@@ -34,7 +34,8 @@ def encodeVideo(raw_path: str, video, logger = None) -> None:
             f.write("\\\n" if not video.color else "\\\\\n") #write a different frame seperator based on color
 
             if logger:
-                logger(video.frameCount / count, count, video.frameCount)
+                percent = count / video.frameCount if count == 0 else 0
+                logger(percent, count, video.frameCount)
             count += 1  
             
         f.close()
@@ -74,7 +75,7 @@ def decodeVideo(raw_path, video, logger = None) -> None:
                         outTemp = StringIO()
                         currentFrame.write(char + '[')
 
-                        while temp != "H" and temp != "C" and temp != "m":
+                        while temp != "C" and temp != "m":
                             j += 1
                             skips += 1
                             temp = line[j]
@@ -100,9 +101,10 @@ def decodeVideo(raw_path, video, logger = None) -> None:
                 currentFrame = StringIO()
 
                 if logger:
-                    logger(count / frameCount, count, frameCount)
+                    percent = count / video.frameCount if count == 0 else 0
+                    logger(percent, count, frameCount)
     
-    
+
     video.frameDiffs = frames
     video.color = color
     video.fps = fps
