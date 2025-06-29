@@ -40,6 +40,7 @@ def encodeVideo(raw_path: str, video, logger = None) -> None:
         
         if video.audioData:
             f.write("\\\\\\")
+            f.write(str(PurePath(video.audioOutputPath)))
             f.write(str(video.audioData))
             
         f.close()

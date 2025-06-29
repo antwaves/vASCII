@@ -8,23 +8,24 @@ def loadAudio(video, raw_input_path: str, raw_output_path: str, video_format: st
 
     videoData = AudioSegment.from_file(input_path, format=video_format)
     videoData.export(output_path, format="mp3")
-    
+
     video.audioData = (open(output_path, "rb").read().hex())
 
 
 # plays audio
-def playAudio():
-    if not playback.active:
-        playback.load_file(path_to_file=f"{config.audioFolder}\\{config.videoStr}.{config.audioExt}")
+def playAudio(video):
+    if not video.playback.active:
+        video.playback.load_file(video.audioOutputPath)
 
-    if playback.paused:
-        playback.resume()
+    if video.playback.paused:
+        video.playback.resume()
     else:
-        playback.play()
+        video.playback.play()
 
 
 #pause the audioooo
-def pauseAudio():
-    if not playback.active:
-        playback.load_file(path_to_file=f"{config.audioFolder}\\{config.videoStr}.{config.audioExt}")
-    playback.pause()
+def pauseAudio(video):
+    if not video.playback.active:
+        video.playback.load_file(video.audioOutputPath)
+
+    video.playback.pause()

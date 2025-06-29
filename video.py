@@ -58,7 +58,7 @@ class Video:
         self.videoCap = cv2.VideoCapture(PurePath(path))
 
         if self.videoCap.isOpened():
-            self.frameCount = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
+            self.frameCount = int(self.videoCap.get(cv2.CAP_PROP_FRAME_COUNT))
             self.fps = self.videoCap.get(cv2.CAP_PROP_FPS)
 
             if self.fpsLimit:
@@ -93,6 +93,31 @@ class Video:
             videoExport.encodeVideo(path, self, logger)
         else:
             raise VideoError("VideoMissingError: Video is missing. Call a video loading function before exporting frames")
+    
+
+    def pause(self) -> None:
+        if self.printThread:
+            audio.pauseAudio(self)
+            self.paused.set()
+    
+
+    def unpause(self) -> None:
+        if self.printThread:
+            audio.playAudio(self)
+            self.paused.clear()
+    
+    
+    def flip_pause(self) -> None:
+        if self.printThread and (not self.paused.is_set()):
+            self.pause()
+        elif self.printThread and self.paused.is_set():
+            self.unpause()
+    
+
+    def stop(self) -> None:
+        if self.printThread:
+            self.pause()
+            self.kill.set()
 
 
     def print_video(self) -> None:
@@ -103,18 +128,22 @@ class Video:
 
         # see https://stackoverflow.com/questions/67329314/creating-a-precise-time-interval-with-no-drift-over-long-periods-of-time
         begin = time.time()   
-        pauseCount = 0 
         targetTime = 0
 
+        audio.playAudio(self)
         for i in range(len(self.frameDiffs)):
-            if self.paused.is_set():
-                while self.paused.is_set():
-                    time.sleep(0.05)
-            
             if self.kill.is_set():
                 break
 
-            print("\033[H" + self.frameDiffs[i])
+            if self.paused.is_set():
+                t = time.time()
+
+                while self.paused.is_set():
+                    time.sleep(0.1)
+
+                targetTime += time.time() - t
+
+            print("\033[H", self.frameDiffs[i], "\033[0m", sep="")
 
             # check if the current time is behind the current expected time, and sleep if so
             target = (begin + targetTime)
@@ -123,33 +152,12 @@ class Video:
                 time.sleep(sleepTime)
             
             targetTime += self.frameTime    
-    
 
-    def start_video(self) -> None:
+        self.stop()
+
+
+    def start(self) -> None:
         self.kill.clear()
         t = Thread(target=self.print_video, args=())
         t.start()
         self.printThread = t
-    
-
-    def pause(self) -> None:
-        if self.printThread:
-            self.paused.set()
-    
-
-    def unpause(self) -> None:
-        if self.printThread:
-            self.paused.clear()
-    
-
-    def stop(self) -> None:
-        if self.printThread:
-            self.kill.set()
-
-
-v = Video()
-
-v.from_file("videos//taxes.mp4").load_frames()
-v.export_video()
-
-#v.start_video()

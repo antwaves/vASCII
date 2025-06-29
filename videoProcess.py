@@ -65,7 +65,7 @@ def getDifference(current, last, color):
 
 # processes a video into either pure text or color
 def processVideo(v, logger = None):
-    is_grabbed, frame = v.cap.read()
+    is_grabbed, frame = v.videoCap.read()
 
     # scale down image based on size
     scale_percent = (
@@ -77,7 +77,7 @@ def processVideo(v, logger = None):
 
     count = 0
     while is_grabbed:  # iterate through all frames
-        is_grabbed, frame = v.cap.read()
+        is_grabbed, frame = v.videoCap.read()
 
         if logger:
             c = (count / v.skip) if v.skip else count
@@ -107,4 +107,4 @@ def processVideo(v, logger = None):
             break
         count += 1
 
-    v.cap.release()
+    v.videoCap.release()
