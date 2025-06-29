@@ -51,7 +51,16 @@ class Video:
         self.audioOutputPath = "output.mp3"
 
         self.color = False
-        
+
+
+    def __del__(self):
+        self.playback = just_playback.Playback()
+
+        try:
+            os.remove(self.audioOutputPath)
+        except FileExistsError:
+            pass
+  
 
     def from_file(self, raw_path: str):
         path = PurePath(raw_path)
@@ -143,7 +152,7 @@ class Video:
 
                 targetTime += time.time() - t
 
-            print("\033[H", self.frameDiffs[i], "\033[0m", sep="")
+            print("\033[H", self.frameDiffs[i], "\033[39m\033[49m", sep="")
 
             # check if the current time is behind the current expected time, and sleep if so
             target = (begin + targetTime)
@@ -156,7 +165,7 @@ class Video:
         self.stop()
 
 
-    def start(self) -> None:
+    def start_video(self) -> None:
         self.kill.clear()
         t = Thread(target=self.print_video, args=())
         t.start()

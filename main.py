@@ -8,7 +8,7 @@ v.size = 75
 v.resizeToHeight = True
 
 v.from_file("videos//taxes.mp4").load_frames()
-v.start()
+v.start_video()
 
 while True:
     if keyboard.is_pressed("q"):
