@@ -54,10 +54,6 @@ def getDifference(current, last, color):
     cLines = current.split("\n")
     lLines = last.split("\n")
 
-    with open("log.txt", "a") as f:
-        f.write(cLines[0] + '\n')
-        f.write(lLines[0] + "\n\n")
-
     for i in range(len(cLines)):
         if cLines[i] == lLines[i]:
             output.write("\n")

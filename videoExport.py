@@ -37,6 +37,10 @@ def encodeVideo(raw_path: str, video, logger = None) -> None:
                 percent = count / video.frameCount if count == 0 else 0
                 logger(percent, count, video.frameCount)
             count += 1  
+        
+        if video.audioData:
+            f.write("\\\\\\")
+            f.write(str(video.audioData))
             
         f.close()
     
@@ -58,6 +62,7 @@ def decodeVideo(raw_path, video, logger = None) -> None:
         count = 0
         currentFrame = StringIO()
         breakCheck = "\\\n" if not color else "\\\\\n"
+        audioBreak = "\\\\\\"
 
         for line in lines:
             if line != breakCheck:

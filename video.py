@@ -22,41 +22,44 @@ class VideoError(Exception):
 
 class Video:
     def __init__(self):
-        #create defaults
-        self.cap = None
-
-        self.mute = False
+        #internal data/handles
+        self.videoCap = None
         self.audioData = None
-        self.audioOutput = "output.mp3"
         self.playback = just_playback.Playback()
-
-        self.size = 50
-        self.resizeToHeight = False
-
-        self.skip = None
-        self.fps = None
-        self.fpsLimit = 12
-        self.frameTime = None
-        self.frameCount = None
-
-        self.color = False
-        self.colorReduction = 16
 
         self.frames = []
         self.frameDiffs = []
+        self.fps = None
 
         self.paused = Event()
         self.kill = Event()
         self.printThread = None
+
+        #compression preferences
+        self.size = 50
+        self.resizeToHeight = False
+
+        self.skip = None
+        self.fpsLimit = 12
+        self.frameTime = None
+        self.frameCount = None
+
+        self.colorReduction = 16
+
+        #other preferences
+        self.mute = False
+        self.audioOutputPath = "output.mp3"
+
+        self.color = False
         
 
     def from_file(self, raw_path: str):
         path = PurePath(raw_path)
-        self.cap = cv2.VideoCapture(PurePath(path))
+        self.videoCap = cv2.VideoCapture(PurePath(path))
 
-        if self.cap.isOpened():
+        if self.videoCap.isOpened():
             self.frameCount = int(self.cap.get(cv2.CAP_PROP_FRAME_COUNT))
-            self.fps = self.cap.get(cv2.CAP_PROP_FPS)
+            self.fps = self.videoCap.get(cv2.CAP_PROP_FPS)
 
             if self.fpsLimit:
                 self.skip = self.fps // self.fpsLimit  
@@ -65,7 +68,7 @@ class Video:
                 self.frameTime = 1 / self.fps
             
             video_ext = os.path.splitext(str(path))[1][1:]
-            audio.loadAudio(self, path, self.audioOutput, video_ext)
+            audio.loadAudio(self, path, self.audioOutputPath, video_ext)
         else:
             raise VideoError(f"FileExistsError: Does '{path}' really exist")
         
@@ -73,7 +76,7 @@ class Video:
 
 
     def load_frames(self, logger = None):
-        if self.cap:
+        if self.videoCap:
             videoProcess.processVideo(self, logger)
         else:
             raise VideoError("VideoMissingError: Video is missing. Call a video loading function before loading frames")
@@ -86,7 +89,7 @@ class Video:
     
 
     def export_video(self, path: str = "output.txt", logger = None) -> None:
-        if self.cap:
+        if self.videoCap:
             videoExport.encodeVideo(path, self, logger)
         else:
             raise VideoError("VideoMissingError: Video is missing. Call a video loading function before exporting frames")
@@ -146,8 +149,7 @@ class Video:
 
 v = Video()
 
-v.from_file("videos//taxes.mp4").load_frames(helper.log)
-#v.from_import("test.txt")
-#v.export_video("test.txt", helper.log)
+v.from_file("videos//taxes.mp4").load_frames()
+v.export_video()
 
 #v.start_video()

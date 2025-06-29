@@ -6,9 +6,10 @@ def loadAudio(video, raw_input_path: str, raw_output_path: str, video_format: st
     input_path = PurePath(raw_input_path)
     output_path = PurePath(raw_output_path)
 
-    video = AudioSegment.from_file(input_path, format=video_format)
-    video.export(output_path, format="mp3")
-    video.audioData = open(output_path, "rb").read().hex()
+    videoData = AudioSegment.from_file(input_path, format=video_format)
+    videoData.export(output_path, format="mp3")
+    
+    video.audioData = (open(output_path, "rb").read().hex())
 
 
 # plays audio
