@@ -64,6 +64,7 @@ class Video:
 
     def from_file(self, raw_path: str):
         path = PurePath(raw_path)
+
         self.videoCap = cv2.VideoCapture(PurePath(path))
 
         if self.videoCap.isOpened():
@@ -79,7 +80,7 @@ class Video:
             video_ext = os.path.splitext(str(path))[1][1:]
             audio.loadAudio(self, path, self.audioOutputPath, video_ext)
         else:
-            raise VideoError(f"FileExistsError: Does '{path}' really exist")
+            raise VideoError(f"FileExistsError: Does '{str(path)}' really exist")
         
         return self
 

@@ -192,19 +192,3 @@ cython_debug/
 #  refer to https://docs.cursor.com/context/ignore-files
 .cursorignore
 .cursorindexingignore
-
-scott.mp3
-scott.txt
-short.mp3
-short.txt
-taxes.mp3
-taxes.txt
-scott.mp4
-short.mp4
-taxes.mp4
-log.txt
-taxes.txt
-dependencies.txt
-test.txt
-output.txt
-output.mp3

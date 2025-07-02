@@ -1,9 +1,7 @@
 from io import StringIO
 import cv2
 
-import config
 import textProcess
-import helper
 
 # converts an image to ANSI color escape codes
 def imToTextColor(img, frames, colorReduction):

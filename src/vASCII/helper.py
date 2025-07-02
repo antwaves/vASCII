@@ -1,5 +1,3 @@
-import config
-
 def log(percent, count, frameCount):  # log stuff. remove if needed
     if count % 50 != 0:
         return None
