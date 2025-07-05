@@ -3,11 +3,10 @@ import time
 from pathlib import PurePath
 from threading import Event, Thread
 
-import audio
 import cv2
 import just_playback
-import videoExport
-import videoProcess
+
+from . import videoExport, audio, videoProcess
 
 
 class VideoError(Exception):

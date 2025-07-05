@@ -1,7 +1,7 @@
 from io import StringIO
 
 import cv2
-import textProcess
+from . import textProcess
 
 
 # converts an image to ANSI color escape codes
