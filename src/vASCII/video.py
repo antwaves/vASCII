@@ -54,7 +54,7 @@ class Video:
 
         try:
             os.remove(self.audioOutputPath)
-        except FileExistsError:
+        except Exception:
             pass
 
     def from_file(self, raw_path: str):

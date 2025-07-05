@@ -1,10 +1,11 @@
 from pathlib import PurePath
+from io import BytesIO
 
 from pydub import AudioSegment
 
 
 # takes the video and creates a new mp3 file
-def loadAudio(video, raw_input_path: str, raw_output_path: str, video_format: str):
+def loadAudio(video, raw_input_path: str, raw_output_path: str, video_format: str) -> None:
     input_path = PurePath(raw_input_path)
     output_path = PurePath(raw_output_path)
 
@@ -14,8 +15,13 @@ def loadAudio(video, raw_input_path: str, raw_output_path: str, video_format: st
     video.audioData = open(output_path, "rb").read().hex()
 
 
+def loadFromHex(hex: str, output: str) -> None:
+    audio = AudioSegment.from_file(BytesIO(bytes.fromhex(hex)), "mp3")
+    audio.export(output, format="mp3")
+
+
 # plays audio
-def playAudio(video):
+def playAudio(video) -> None:
     if not video.playback.active:
         video.playback.load_file(video.audioOutputPath)
 
@@ -26,7 +32,7 @@ def playAudio(video):
 
 
 # pause the audioooo
-def pauseAudio(video):
+def pauseAudio(video) -> None:
     if not video.playback.active:
         video.playback.load_file(video.audioOutputPath)
 
