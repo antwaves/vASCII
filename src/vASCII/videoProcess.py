@@ -1,12 +1,13 @@
 from io import StringIO
-import cv2
 
+import cv2
 import textProcess
+
 
 # converts an image to ANSI color escape codes
 def imToTextColor(img, frames, colorReduction):
     rows, cols, _ = img.shape
-    output = StringIO() 
+    output = StringIO()
 
     img = (img // colorReduction) * colorReduction
     last_color = [0, 0, 0]
@@ -44,10 +45,10 @@ def imToText(img, frames):
     frames.append(output.getvalue())  # add frame to frames array
 
 
-#get the "difference" between two frames, or in other words, the print needed
-#to transition from the "last" frame to the "current" frame
+# get the "difference" between two frames, or in other words, the print needed
+# to transition from the "last" frame to the "current" frame
 def getDifference(current, last, color):
-    output = StringIO() #use stringIO for speeeeeeeed
+    output = StringIO()  # use stringIO for speeeeeeeed
 
     cLines = current.split("\n")
     lLines = last.split("\n")
@@ -62,14 +63,12 @@ def getDifference(current, last, color):
 
 
 # processes a video into either pure text or color
-def processVideo(v, logger = None):
+def processVideo(v, logger=None):
     is_grabbed, frame = v.videoCap.read()
 
     # scale down image based on size
     scale_percent = (
-        v.size / frame.shape[0]
-        if v.resizeToHeight
-        else v.size / frame.shape[1]
+        v.size / frame.shape[0] if v.resizeToHeight else v.size / frame.shape[1]
     )
     dim = (int(frame.shape[1] * scale_percent), int(frame.shape[0] * scale_percent))
 
@@ -79,7 +78,11 @@ def processVideo(v, logger = None):
 
         if logger:
             c = (count / v.skip) if v.skip else count
-            logger(c/v.frameCount, c, v.frameCount, )
+            logger(
+                c / v.frameCount,
+                c,
+                v.frameCount,
+            )
 
         # skips frames based on the skip variable... i dont know why i added this comment
         if v.skip and count % v.skip == 0:
@@ -89,16 +92,28 @@ def processVideo(v, logger = None):
         # resize and convert to text
         if is_grabbed:
             frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
-            
+
             if v.color:
                 imToTextColor(frame, v.frames, v.colorReduction)
             else:
                 imToText(frame, v.frames)
 
             if v.skip and count % v.skip != 0 and len(v.frames) > 1:
-                v.frameDiffs.append(getDifference(v.frames[len(v.frames) - 1], v.frames[len(v.frames) - 2], v.color))
+                v.frameDiffs.append(
+                    getDifference(
+                        v.frames[len(v.frames) - 1],
+                        v.frames[len(v.frames) - 2],
+                        v.color,
+                    )
+                )
             elif len(v.frames) > 1:
-                v.frameDiffs.append(getDifference(v.frames[len(v.frames) - 1], v.frames[len(v.frames) - 2], v.color))
+                v.frameDiffs.append(
+                    getDifference(
+                        v.frames[len(v.frames) - 1],
+                        v.frames[len(v.frames) - 2],
+                        v.color,
+                    )
+                )
             elif len(v.frames) == 1:
                 v.frameDiffs.append(v.frames[0])
         else:

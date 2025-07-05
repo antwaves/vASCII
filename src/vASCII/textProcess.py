@@ -1,4 +1,4 @@
-#Function that creates an array of colors out of a given string from a video
+# Function that creates an array of colors out of a given string from a video
 def lineToArr(line):
     colors = [None] * len(line)
     skip = False
@@ -6,8 +6,8 @@ def lineToArr(line):
 
     lastBracket = 0
     count = 0
- 
-    #don't. change. this. 
+
+    # don't. change. this.
     for i in range(len(line)):
         if skip:
             skip = False
@@ -32,7 +32,7 @@ def lineToArr(line):
     return colors
 
 
-#get the "difference" between two lines, i.e. what is needed to transition from the second to the first through printing
+# get the "difference" between two lines, i.e. what is needed to transition from the second to the first through printing
 def getLineDiff(lineOne, lineTwo, color):
     result = ""
     count = 0
@@ -66,7 +66,7 @@ def getLineDiff(lineOne, lineTwo, color):
                 if count > 0:
                     result += " " if count == 1 else f"\033[{count}C"
                     count = 0
-                    
+
                 result += p1
 
     result += "\n"

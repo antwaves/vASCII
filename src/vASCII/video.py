@@ -1,28 +1,26 @@
 import os
-import cv2
 import time
-from threading import Thread, Event
-
-import just_playback
 from pathlib import PurePath
+from threading import Event, Thread
 
-import videoProcess
-import videoExport
-import helper
 import audio
+import cv2
+import just_playback
+import videoExport
+import videoProcess
 
 
 class VideoError(Exception):
     def __init__(self, message):
         self.message = message
-    
+
     def __str__(self):
         return self.message
 
 
 class Video:
     def __init__(self):
-        #internal data/handles
+        # internal data/handles
         self.videoCap = None
         self.audioData = None
         self.playback = just_playback.Playback()
@@ -35,7 +33,7 @@ class Video:
         self.kill = Event()
         self.printThread = None
 
-        #compression preferences
+        # compression preferences
         self.size = 50
         self.resizeToHeight = False
 
@@ -46,12 +44,11 @@ class Video:
 
         self.colorReduction = 16
 
-        #other preferences
+        # other preferences
         self.mute = False
         self.audioOutputPath = "output.mp3"
 
         self.color = False
-
 
     def __del__(self):
         self.playback = just_playback.Playback()
@@ -60,7 +57,6 @@ class Video:
             os.remove(self.audioOutputPath)
         except FileExistsError:
             pass
-  
 
     def from_file(self, raw_path: str):
         path = PurePath(raw_path)
@@ -72,72 +68,69 @@ class Video:
             self.fps = self.videoCap.get(cv2.CAP_PROP_FPS)
 
             if self.fpsLimit:
-                self.skip = self.fps // self.fpsLimit  
+                self.skip = self.fps // self.fpsLimit
                 self.fps = int(self.fps // self.skip)
                 self.frameCount = int(self.frameCount // self.skip)
                 self.frameTime = 1 / self.fps
-            
+
             video_ext = os.path.splitext(str(path))[1][1:]
             audio.loadAudio(self, path, self.audioOutputPath, video_ext)
         else:
             raise VideoError(f"FileExistsError: Does '{str(path)}' really exist")
-        
+
         return self
 
-
-    def load_frames(self, logger = None):
+    def load_frames(self, logger=None):
         if self.videoCap:
             videoProcess.processVideo(self, logger)
         else:
-            raise VideoError("VideoMissingError: Video is missing. Call a video loading function before loading frames")
+            raise VideoError(
+                "VideoMissingError: Video is missing. Call a video loading function before loading frames"
+            )
 
         return self
 
-
-    def from_import(self, path: str, logger = None) -> None:
+    def from_import(self, path: str, logger=None) -> None:
         videoExport.decodeVideo(path, self, logger)
-    
 
-    def export_video(self, path: str = "output.txt", logger = None) -> None:
+    def export_video(self, path: str = "output.txt", logger=None) -> None:
         if self.videoCap:
             videoExport.encodeVideo(path, self, logger)
         else:
-            raise VideoError("VideoMissingError: Video is missing. Call a video loading function before exporting frames")
-    
+            raise VideoError(
+                "VideoMissingError: Video is missing. Call a video loading function before exporting frames"
+            )
 
     def pause(self) -> None:
         if self.printThread:
             audio.pauseAudio(self)
             self.paused.set()
-    
 
     def unpause(self) -> None:
         if self.printThread:
             audio.playAudio(self)
             self.paused.clear()
-    
-    
+
     def flip_pause(self) -> None:
         if self.printThread and (not self.paused.is_set()):
             self.pause()
         elif self.printThread and self.paused.is_set():
             self.unpause()
-    
 
     def stop(self) -> None:
         if self.printThread:
             self.pause()
             self.kill.set()
 
-
     def print_video(self) -> None:
         if not self.frameDiffs:
-            raise VideoError("FramesMissingError: Frames are missing. Call a frame loading function before printing frames")
-        print("\33[?25l") #hide mouse
-
+            raise VideoError(
+                "FramesMissingError: Frames are missing. Call a frame loading function before printing frames"
+            )
+        print("\33[?25l")  # hide mouse
 
         # see https://stackoverflow.com/questions/67329314/creating-a-precise-time-interval-with-no-drift-over-long-periods-of-time
-        begin = time.time()   
+        begin = time.time()
         targetTime = 0
 
         audio.playAudio(self)
@@ -156,15 +149,14 @@ class Video:
             print("\033[H", self.frameDiffs[i], "\033[39m\033[49m", sep="")
 
             # check if the current time is behind the current expected time, and sleep if so
-            target = (begin + targetTime)
+            target = begin + targetTime
             sleepTime = target - time.time()
             if sleepTime > 0:
                 time.sleep(sleepTime)
-            
-            targetTime += self.frameTime    
+
+            targetTime += self.frameTime
 
         self.stop()
-
 
     def start_video(self) -> None:
         self.kill.clear()
