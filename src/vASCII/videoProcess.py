@@ -66,12 +66,6 @@ def getDifference(current, last, color):
 def processVideo(v, logger=None):
     is_grabbed, frame = v.videoCap.read()
 
-    # scale down image based on size
-    scale_percent = (
-        v.size / frame.shape[0] if v.resizeToHeight else v.size / frame.shape[1]
-    )
-    dim = (int(frame.shape[1] * scale_percent), int(frame.shape[0] * scale_percent))
-
     count = 0
     while is_grabbed:  # iterate through all frames
         is_grabbed, frame = v.videoCap.read()
@@ -91,7 +85,7 @@ def processVideo(v, logger=None):
 
         # resize and convert to text
         if is_grabbed:
-            frame = cv2.resize(frame, dim, interpolation=cv2.INTER_AREA)
+            frame = cv2.resize(frame, (v.width, v.height), interpolation=cv2.INTER_AREA)
 
             if v.color:
                 imToTextColor(frame, v.frames, v.colorReduction)

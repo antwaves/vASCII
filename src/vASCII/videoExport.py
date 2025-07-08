@@ -119,10 +119,7 @@ def decodeVideo(raw_path, video, logger=None) -> None:
                         continue
 
                     currentFrame.write(char + " ")
-            else:
-                with open("log.txt", "a") as f:
-                    f.write(currentFrame.getvalue())
-                    
+            else:  
                 frames.append(currentFrame.getvalue())
                 currentFrame = StringIO()
 

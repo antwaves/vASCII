@@ -32,6 +32,10 @@ class Video:
         self.kill = Event()
         self.printThread = None
 
+        self.width = None
+        self.height = None
+        self.videoLength = None
+
         # compression preferences
         self.size = 50
         self.resizeToHeight = False
@@ -71,6 +75,16 @@ class Video:
                 self.fps = int(self.fps // self.skip)
                 self.frameCount = int(self.frameCount // self.skip)
                 self.frameTime = 1 / self.fps
+            
+            width = self.videoCap.get(cv2.CAP_PROP_FRAME_WIDTH)
+            height = self.videoCap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            scale_percent = (self.size / height if self.resizeToHeight else self.size / width)
+
+            self.width = int(width * scale_percent)
+            self.height = int(height * scale_percent)
+
+            print(self.frameCount / self.fps)
+            #self.videoLength = self.frameCount / self.fps
 
             video_ext = os.path.splitext(str(path))[1][1:]
             audio.loadAudio(self, path, self.audioOutputPath, video_ext)
@@ -103,17 +117,19 @@ class Video:
     def pause(self) -> None:
         if self.printThread:
             audio.pauseAudio(self)
-            self.paused.set()
+        
+        self.paused.set()
 
     def unpause(self) -> None:
         if self.printThread:
             audio.playAudio(self)
-            self.paused.clear()
+        
+        self.paused.clear()
 
     def flip_pause(self) -> None:
-        if self.printThread and (not self.paused.is_set()):
+        if not self.paused.is_set():
             self.pause()
-        elif self.printThread and self.paused.is_set():
+        elif self.paused.is_set():
             self.unpause()
 
     def stop(self) -> None:
