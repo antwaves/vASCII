@@ -74,14 +74,12 @@ def processVideo(v, exceptionHandler, logger=None):
         is_grabbed, frame = v.videoCap.read()
 
         if logger:
-            c = (count / v.skip) if v.skip else count
-            logger(
-                c / v.frameCount,
-                c,
-                v.frameCount,
-            )
+            actualFrameNumber = (count / v.skip) if v.skip else count
+            logInfo = {"currentFrameNumber": actualFrameNumber, 
+                       "frameCount": v.frameCount, 
+                       "percentComplete": actualFrameNumber / v.frameCount}
+            logger(logInfo)
 
-        # skips frames based on the skip variable... i dont know why i added this comment
         if v.skip and count % v.skip == 0:
             count += 1
             continue

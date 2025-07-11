@@ -144,6 +144,8 @@ class Video:
                 self.pause()   
             self.kill.set()
 
+    ''' Note: In some instances, the move to the top left of the screen will scroll up and break the frame
+    I can't find a very good fix for this that wouldn't restrict the way the function is used. So i'm not going to fix it '''
     def print_video(self) -> None:
         if not self.frameDiffs:
             raise VideoError(
@@ -192,6 +194,6 @@ class Video:
         term_size = os.get_terminal_size()
         
         if term_size:
-            return term_size.columns >= self.width * 2 and term_size.lines >= self.height
+            return term_size.columns > self.width * 2 and term_size.lines > self.height
         else:
             raise VideoError("Terminal size could not be acessed")

@@ -1,4 +1,4 @@
-# Function that creates an array of colors out of a given string from a video
+# create an array of rgb colors out of a given string from a video converted to text
 def lineToArr(line):
     colors = [None] * len(line)
     skip = False
@@ -15,7 +15,7 @@ def lineToArr(line):
 
         char = line[i]
 
-        if char == "[" and line[i] != "H":
+        if char == "[":
             lastBracket = i
             skip = True
 
