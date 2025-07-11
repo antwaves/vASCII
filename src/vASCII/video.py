@@ -55,7 +55,9 @@ class Video:
 
     def __del__(self):
         self.playback = just_playback.Playback()
-        self.videoCap.release()
+
+        if self.videoCap:
+            self.videoCap.release()
 
         try:
             os.remove(self.audioOutputPath)
