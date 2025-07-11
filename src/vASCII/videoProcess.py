@@ -63,8 +63,11 @@ def getDifference(current, last, color):
 
 
 # processes a video into either pure text or color
-def processVideo(v, logger=None):
+def processVideo(v, exceptionHandler, logger=None):
     is_grabbed, frame = v.videoCap.read()
+
+    if not is_grabbed:
+        exceptionHandler("VideoMissingError: Could not open video")
 
     count = 0
     while is_grabbed:  # iterate through all frames
@@ -109,9 +112,5 @@ def processVideo(v, logger=None):
                     )
                 )
             elif len(v.frames) == 1:
-                v.frameDiffs.append(v.frames[0])
-        else:
-            break
+                v.frameDiffs.append(v.frames[0])            
         count += 1
-
-    v.videoCap.release()

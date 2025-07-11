@@ -9,10 +9,14 @@ def loadAudio(video, raw_input_path: str, raw_output_path: str, video_format: st
     input_path = PurePath(raw_input_path)
     output_path = PurePath(raw_output_path)
 
-    videoData = AudioSegment.from_file(input_path, format=video_format)
-    videoData.export(output_path, format="mp3")
-
-    video.audioData = open(output_path, "rb").read().hex()
+    try:
+        videoData = AudioSegment.from_file(input_path, format=video_format)
+        videoData.export(output_path, format="mp3")
+        video.audioData = open(output_path, "rb").read().hex()
+    except IndexError: #lack of audioc
+        pass
+    except Exception as e:
+        print(f"Unintended exception '{e}' was thrown in loadAudio")
 
 
 def loadFromHex(hex: str, output: str) -> None:
@@ -22,18 +26,19 @@ def loadFromHex(hex: str, output: str) -> None:
 
 # plays audio
 def playAudio(video) -> None:
-    if not video.playback.active:
-        video.playback.load_file(video.audioOutputPath)
+    if video.audioData:
+        if not video.playback.active:
+            video.playback.load_file(video.audioOutputPath)
 
-    if video.playback.paused:
-        video.playback.resume()
-    else:
-        video.playback.play()
+        if video.playback.paused:
+            video.playback.resume()
+        else:
+            video.playback.play()
 
 
 # pause the audioooo
 def pauseAudio(video) -> None:
-    if not video.playback.active:
-        video.playback.load_file(video.audioOutputPath)
-
-    video.playback.pause()
+    if video.audioData:
+        if not video.playback.active:
+            video.playback.load_file(video.audioOutputPath)
+        video.playback.pause()

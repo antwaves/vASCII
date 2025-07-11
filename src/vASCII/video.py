@@ -34,7 +34,7 @@ class Video:
 
         self.width = None
         self.height = None
-        self.videoLength = None
+        self.length = None
 
         # compression preferences
         self.size = 50
@@ -55,6 +55,7 @@ class Video:
 
     def __del__(self):
         self.playback = just_playback.Playback()
+        self.videoCap.release()
 
         try:
             os.remove(self.audioOutputPath)
@@ -72,22 +73,27 @@ class Video:
 
             if self.fpsLimit:
                 self.skip = self.fps // self.fpsLimit
-                self.fps = int(self.fps // self.skip)
-                self.frameCount = int(self.frameCount // self.skip)
-                self.frameTime = 1 / self.fps
+
+                if self.skip <= 1:
+                    self.skip = None
+                    self.frameTime = 1 / self.fps
+                else:
+                    self.fps = int(self.fps // self.skip)
+                    self.frameCount = int(self.frameCount // self.skip)
+                    self.frameTime = 1 / self.fps
+
             
             width = self.videoCap.get(cv2.CAP_PROP_FRAME_WIDTH)
             height = self.videoCap.get(cv2.CAP_PROP_FRAME_HEIGHT)
             scale_percent = (self.size / height if self.resizeToHeight else self.size / width)
 
-            self.width = int(width * scale_percent)
+            self.width= int(width * scale_percent)
             self.height = int(height * scale_percent)
-
-            print(self.frameCount / self.fps)
-            #self.videoLength = self.frameCount / self.fps
+            self.length = self.frameCount / self.fps
 
             video_ext = os.path.splitext(str(path))[1][1:]
-            audio.loadAudio(self, path, self.audioOutputPath, video_ext)
+            if not self.mute:
+                audio.loadAudio(self, path, self.audioOutputPath, video_ext)
         else:
             raise VideoError(f"FileExistsError: Does '{str(path)}' really exist")
 
@@ -95,7 +101,7 @@ class Video:
 
     def load_frames(self, logger=None):
         if self.videoCap:
-            videoProcess.processVideo(self, logger)
+            videoProcess.processVideo(self, VideoError, logger)
         else:
             raise VideoError(
                 "VideoMissingError: Video is missing. Call a video loading function before loading frames"
@@ -134,7 +140,8 @@ class Video:
 
     def stop(self) -> None:
         if self.printThread:
-            self.pause()
+            if self.audioData:
+                self.pause()   
             self.kill.set()
 
     def print_video(self) -> None:
@@ -148,7 +155,9 @@ class Video:
         begin = time.time()
         targetTime = 0
 
-        audio.playAudio(self)
+        if not self.mute and self.audioData:
+            audio.playAudio(self)
+
         for i in range(len(self.frameDiffs)):
             if self.kill.is_set():
                 break
@@ -178,3 +187,11 @@ class Video:
         t = Thread(target=self.print_video, args=())
         t.start()
         self.printThread = t
+
+    def video_fits(self) -> bool:
+        term_size = os.get_terminal_size()
+        
+        if term_size:
+            return term_size.columns >= self.width * 2 and term_size.lines >= self.height
+        else:
+            raise VideoError("Terminal size could not be acessed")
