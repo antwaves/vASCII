@@ -174,7 +174,7 @@ class Video:
 
                 targetTime += time.time() - t
 
-            print("\033[H", self.frameDiffs[i], "\033[39m\033[49m", sep="")
+            print("\033[H", self.frameDiffs[i], "\033[39m\033[49m", sep="", flush=True)
 
             # check if the current time is behind the current expected time, and sleep if so
             target = begin + targetTime

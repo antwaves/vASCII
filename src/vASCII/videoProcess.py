@@ -14,7 +14,7 @@ def imToTextColor(img, frames, colorReduction):
 
     for i in range(rows):
         for j in range(cols):
-            color = list(img[i, j])
+            color = tuple(img[i, j])
 
             if last_color != color or j == 0:
                 output.write(f"\033[48;2;{color[2]};{color[1]};{color[0]}m  ")
@@ -22,6 +22,7 @@ def imToTextColor(img, frames, colorReduction):
                 output.write("  ")
             last_color = color
         output.write("\n")
+        
     output.write("\n")
     frames.append(output.getvalue())  # add frame to frames array
 

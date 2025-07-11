@@ -157,9 +157,9 @@ def decodeVideo(raw_path, video, logger=None) -> None:
                 currentFrame = StringIO()
                 
                 if logger:
-                    logInfo = {"currentFrameNumber": count, 
-                            "frameCount": video.frameCount, 
-                            "percentComplete": count / video.frameCount}
+                    logInfo = {"currentFrameNumber": currentFrameCount, 
+                            "frameCount": totalFrameCount, 
+                            "percentComplete": currentFrameCount / totalFrameCount}
                     logger(logInfo)
                         
                 currentFrameCount += 1
