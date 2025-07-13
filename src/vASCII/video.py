@@ -27,6 +27,10 @@ class Video:
         self.frames = []
         self.frameDiffs = []
         self.fps = None
+        self.skip = None
+
+        self.frameTime = None
+        self.frameCount = None
 
         self.paused = Event()
         self.kill = Event()
@@ -40,11 +44,7 @@ class Video:
         self.size = 50
         self.resizeToHeight = False
 
-        self.skip = None
         self.fpsLimit = 12
-        self.frameTime = None
-        self.frameCount = None
-
         self.colorReduction = 16
 
         # other preferences
@@ -52,6 +52,11 @@ class Video:
         self.audioOutputPath = "output.mp3"
 
         self.color = False
+
+        #character sets should be ordered by least space taken up to most space
+        #the length of character sets should always be divisible by 256 (4, 8, 16, etc)
+        self.charSet =  [" ", "'", ":", ",", "-", "^", '"', "<", "c", "o", "O", "B", "W", "0", "%", "@"]
+
 
     def __del__(self):
         self.playback = just_playback.Playback()
@@ -63,6 +68,7 @@ class Video:
             os.remove(self.audioOutputPath)
         except Exception:
             pass
+
 
     def from_file(self, raw_path: str):
         path = PurePath(raw_path)
@@ -83,7 +89,6 @@ class Video:
                     self.fps = int(self.fps // self.skip)
                     self.frameCount = int(self.frameCount // self.skip)
                     self.frameTime = 1 / self.fps
-
             
             width = self.videoCap.get(cv2.CAP_PROP_FRAME_WIDTH)
             height = self.videoCap.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -101,6 +106,7 @@ class Video:
 
         return self
 
+
     def load_frames(self, logger=None):
         if self.videoCap:
             videoProcess.processVideo(self, VideoError, logger)
@@ -111,8 +117,10 @@ class Video:
 
         return self
 
+
     def from_import(self, path: str, logger=None) -> None:
         videoExport.decodeVideo(path, self, logger)
+
 
     def export_video(self, path: str = "output.txt", logger=None) -> None:
         if self.videoCap:
@@ -122,11 +130,13 @@ class Video:
                 "VideoMissingError: Video is missing. Call a video loading function before exporting frames"
             )
 
+
     def pause(self) -> None:
         if self.printThread:
             audio.pauseAudio(self)
         
         self.paused.set()
+
 
     def unpause(self) -> None:
         if self.printThread:
@@ -134,17 +144,20 @@ class Video:
         
         self.paused.clear()
 
+
     def flip_pause(self) -> None:
         if not self.paused.is_set():
             self.pause()
         elif self.paused.is_set():
             self.unpause()
 
+
     def stop(self) -> None:
         if self.printThread:
             if self.audioData:
                 self.pause()   
             self.kill.set()
+
 
     ''' Note: In some instances, the move to the top left of the screen will scroll up and break the frame
     I can't find a very good fix for this that wouldn't restrict the way the function is used. So i'm not going to fix it '''
@@ -186,11 +199,13 @@ class Video:
 
         self.stop()
 
+
     def start_video(self) -> None:
         self.kill.clear()
         t = Thread(target=self.print_video, args=())
         t.start()
         self.printThread = t
+
 
     def video_fits(self) -> bool:
         term_size = os.get_terminal_size()

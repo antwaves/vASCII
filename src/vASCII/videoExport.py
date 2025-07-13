@@ -110,6 +110,7 @@ def decodeVideo(raw_path, video, logger=None) -> None:
                 outputString = lines[currentLineCount + 1].strip()
                 video.audioOutputPath = outputString
                 loadFromHex(hexString, outputString)
+                video.audioData = hexString
                 break
 
             elif line != breakCheck:
@@ -174,3 +175,4 @@ def decodeVideo(raw_path, video, logger=None) -> None:
 
     video.width = width
     video.height = height
+    

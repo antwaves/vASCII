@@ -26,25 +26,27 @@ def imToTextColor(img, frames, colorReduction):
     output.write("\n")
     frames.append(output.getvalue())  # add frame to frames array
 
-
 # converts an image to ASCII
-def imToText(img, frames):
-    rows, cols, _ = img.shape
+def imToText(img, charSet: list, frames: list, errorHandler) -> None:
     output = StringIO()
+    rows, cols, _ = img.shape
+    chars = [char + " " for char in charSet]
+
+    if 256 % len(charSet) == 0:
+        div = int(256 / len(charSet))
+    else:
+        exceptionHandler("Invalid characterset provided")
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    brightValues = ["  ", "- ", "= ", "o ", "O ", "0 ", "% ", "@ "]
-
-    # iterate through the pixels and check brightness against the brightValues list
+    # iterate through the pixels and check brightness against charset
     for i in range(rows):
         for j in range(cols):
             color = img[i, j]
-            output.write(brightValues[color // 32])
+            output.write(chars[color // div])
         output.write("\n")
 
     output.write("\n")
     frames.append(output.getvalue())  # add frame to frames array
-
 
 # get the "difference" between two frames, or in other words, the print needed
 # to transition from the "last" frame to the "current" frame
@@ -63,6 +65,13 @@ def getDifference(current, last, color):
     return output.getvalue()
 
 
+
+''' 
+NOTE TO SELF
+Change how this works, feed the image data directly to a 
+difference function and THEN turn the data into text. 
+Final output shouldnt change the export/import
+'''
 # processes a video into either pure text or color
 def processVideo(v, exceptionHandler, logger=None):
     is_grabbed, frame = v.videoCap.read()
@@ -92,7 +101,7 @@ def processVideo(v, exceptionHandler, logger=None):
             if v.color:
                 imToTextColor(frame, v.frames, v.colorReduction)
             else:
-                imToText(frame, v.frames)
+                imToText(frame, v.charSet, v.frames, exceptionHandler)
 
             if v.skip and count % v.skip != 0 and len(v.frames) > 1:
                 v.frameDiffs.append(
