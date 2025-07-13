@@ -3,7 +3,6 @@ from io import StringIO
 import cv2
 from . import textProcess
 
-
 # converts an image to ANSI color escape codes
 def imToTextColor(img, frames, colorReduction):
     rows, cols, _ = img.shape
@@ -27,15 +26,15 @@ def imToTextColor(img, frames, colorReduction):
     frames.append(output.getvalue())  # add frame to frames array
 
 # converts an image to ASCII
-def imToText(img, charSet: list, frames: list, errorHandler) -> None:
+def imToText(img, charSet: list, frames: list, exceptionHandler) -> None:
     output = StringIO()
-    rows, cols, _ = img.shape
+    rows, cols = img.shape
     chars = [char + " " for char in charSet]
 
     if 256 % len(charSet) == 0:
         div = int(256 / len(charSet))
     else:
-        exceptionHandler("Invalid characterset provided")
+        raise exceptionHandler("Invalid character set provided")
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # iterate through the pixels and check brightness against charset
