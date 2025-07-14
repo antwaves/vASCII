@@ -28,7 +28,12 @@ def imToTextColor(img, frames, colorReduction):
 # converts an image to ASCII
 def imToText(img, charSet: list, frames: list, exceptionHandler) -> None:
     output = StringIO()
-    rows, cols = img.shape
+
+    try:
+        rows, cols = img.shape
+    except ValueError:
+        rows, cols, _ = img.shape
+        
     chars = [char + " " for char in charSet]
 
     if 256 % len(charSet) == 0:
