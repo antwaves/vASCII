@@ -41,9 +41,6 @@ class Video:
         self.length = None
 
         # compression preferences
-        self.size = 50
-        self.resizeToHeight = False
-
         self.fpsLimit = 12
         self.colorReduction = 16
 
@@ -70,7 +67,7 @@ class Video:
             pass
 
 
-    def from_file(self, raw_path: str):
+    def from_file(self, raw_path: str, dimensions: tuple[int, int] = None) -> None:
         path = PurePath(raw_path)
 
         self.videoCap = cv2.VideoCapture(PurePath(path))
@@ -90,12 +87,13 @@ class Video:
                     self.frameCount = int(self.frameCount // self.skip)
                     self.frameTime = 1 / self.fps
             
-            width = self.videoCap.get(cv2.CAP_PROP_FRAME_WIDTH)
-            height = self.videoCap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-            scale_percent = (self.size / height if self.resizeToHeight else self.size / width)
+            if not dimensions:
+                self.width = self.videoCap.get(cv2.CAP_PROP_FRAME_WIDTH)
+                self.height = self.videoCap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+            else:
+                self.width = dimensions[0]
+                self.height = dimensions[1]
 
-            self.width= int(width * scale_percent)
-            self.height = int(height * scale_percent)
             self.length = self.frameCount / self.fps
 
             video_ext = os.path.splitext(str(path))[1][1:]
@@ -103,19 +101,27 @@ class Video:
                 audio.loadAudio(self, path, self.audioOutputPath, video_ext)
         else:
             raise VideoError(f"FileExistsError: Does '{str(path)}' really exist")
+    
 
-        return self
+    def fit_to_dim(self, dimensions: tuple[int, int]) -> None: 
+        if self.width > dimensions[0]:
+            scale_percent = (dimensions[0] / self.width)
+            self.width = int(self.width * scale_percent)
+            self.height = int(self.height * scale_percent)
+
+        if self.height > dimensions[1]:
+            scale_percent = (dimensions[1] / self.height)
+            self.width = int(self.width * scale_percent)
+            self.height = int(self.height * scale_percent)
 
 
-    def load_frames(self, logger=None):
+    def load_frames(self, logger = None) -> None:
         if self.videoCap:
             videoProcess.processVideo(self, VideoError, logger)
         else:
             raise VideoError(
                 "VideoMissingError: Video is missing. Call a video loading function before loading frames"
             )
-
-        return self
 
 
     def from_import(self, path: str, logger=None) -> None:

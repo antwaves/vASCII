@@ -33,7 +33,6 @@ def imToText(img, charSet: list, frames: list, exceptionHandler) -> None:
         rows, cols = img.shape
     except ValueError:
         rows, cols, _ = img.shape
-        
     chars = [char + " " for char in charSet]
 
     if 256 % len(charSet) == 0:
@@ -67,7 +66,6 @@ def getDifference(current, last, color):
             output.write(textProcess.getLineDiff(cLines[i], lLines[i], color))
 
     return output.getvalue()
-
 
 
 ''' 
