@@ -2,13 +2,16 @@ from io import StringIO
 
 import cv2
 from . import textProcess
+from .constants import *
 
 # converts an image to ANSI color escape codes
 def imToTextColor(img, frames, colorReduction):
     rows, cols, _ = img.shape
     output = StringIO()
 
-    img = (img // colorReduction) * colorReduction
+    if colorReduction != COLOR_REDUCTION_NONE:
+        img = (img // colorReduction) * colorReduction
+
     last_color = [0, 0, 0]
 
     for i in range(rows):
@@ -76,14 +79,14 @@ Final output shouldnt change the export/import
 '''
 # processes a video into either pure text or color
 def processVideo(v, exceptionHandler, logger=None):
-    is_grabbed, frame = v.videoCap.read()
-
-    if not is_grabbed:
-        exceptionHandler("VideoMissingError: Could not open video")
-
     count = 0
-    while is_grabbed:  # iterate through all frames
+    while True:  # iterate through all frames
         is_grabbed, frame = v.videoCap.read()
+
+        if not is_grabbed and count == 0:
+            exceptionHandler("VideoMissingError: Could not open video")
+        elif not is_grabbed:
+            break
 
         if logger:
             actualFrameNumber = (count / v.skip) if v.skip else count
@@ -98,7 +101,8 @@ def processVideo(v, exceptionHandler, logger=None):
 
         # resize and convert to text
         if is_grabbed:
-            frame = cv2.resize(frame, (v.width, v.height), interpolation=cv2.INTER_AREA)
+            if v.width and v.height:
+                frame = cv2.resize(frame, (int(v.width), int(v.height)), interpolation=cv2.INTER_AREA)
 
             if v.color:
                 imToTextColor(frame, v.frames, v.colorReduction)

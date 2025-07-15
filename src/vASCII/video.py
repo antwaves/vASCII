@@ -7,6 +7,7 @@ import cv2
 import just_playback
 
 from . import videoExport, audio, videoProcess
+from .constants import *
 
 
 class VideoError(Exception):
@@ -42,7 +43,7 @@ class Video:
 
         # compression preferences
         self.fpsLimit = 12
-        self.colorReduction = 16
+        self.colorReduction = COLOR_REDUCTION_NORMAL
 
         # other preferences
         self.mute = False
@@ -76,7 +77,8 @@ class Video:
             self.frameCount = int(self.videoCap.get(cv2.CAP_PROP_FRAME_COUNT))
             self.fps = self.videoCap.get(cv2.CAP_PROP_FPS)
 
-            if self.fpsLimit:
+
+            if self.fpsLimit and self.fpsLimit < self.fps:
                 self.skip = self.fps // self.fpsLimit
 
                 if self.skip <= 1:
@@ -85,7 +87,7 @@ class Video:
                 else:
                     self.fps = int(self.fps // self.skip)
                     self.frameCount = int(self.frameCount // self.skip)
-                    self.frameTime = 1 / self.fps
+            self.frameTime = 1 / self.fps
             
             if not dimensions:
                 self.width = self.videoCap.get(cv2.CAP_PROP_FRAME_WIDTH)
@@ -103,14 +105,14 @@ class Video:
             raise VideoError(f"FileExistsError: Does '{str(path)}' really exist")
     
 
-    def fit_to_dim(self, dimensions: tuple[int, int]) -> None: 
-        if self.width > dimensions[0]:
-            scale_percent = (dimensions[0] / self.width)
+    def fit_to_dim(self, width: int, height:int) -> None: 
+        if self.width > width:
+            scale_percent = (width / self.width)
             self.width = int(self.width * scale_percent)
             self.height = int(self.height * scale_percent)
 
-        if self.height > dimensions[1]:
-            scale_percent = (dimensions[1] / self.height)
+        if self.height > height:
+            scale_percent = (height / self.height)
             self.width = int(self.width * scale_percent)
             self.height = int(self.height * scale_percent)
 
