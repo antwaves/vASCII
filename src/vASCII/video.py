@@ -77,7 +77,6 @@ class Video:
             self.frameCount = int(self.videoCap.get(cv2.CAP_PROP_FRAME_COUNT))
             self.fps = self.videoCap.get(cv2.CAP_PROP_FPS)
 
-
             if self.fpsLimit and self.fpsLimit < self.fps:
                 self.skip = self.fps // self.fpsLimit
 

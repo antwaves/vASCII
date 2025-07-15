@@ -95,7 +95,7 @@ def processVideo(v, exceptionHandler, logger=None):
                        "percentComplete": actualFrameNumber / v.frameCount}
             logger(logInfo)
 
-        if v.skip and count % v.skip == 0:
+        if v.skip and count % v.skip != 0:
             count += 1
             continue
 
@@ -126,5 +126,6 @@ def processVideo(v, exceptionHandler, logger=None):
                     )
                 )
             elif len(v.frames) == 1:
-                v.frameDiffs.append(v.frames[0])            
-        count += 1
+                v.frameDiffs.append(v.frames[0])         
+                   
+            count += 1
