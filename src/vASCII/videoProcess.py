@@ -36,12 +36,9 @@ def imToText(img, charSet: list, frames: list, exceptionHandler) -> None:
         rows, cols = img.shape
     except ValueError:
         rows, cols, _ = img.shape
-    chars = [char + " " for char in charSet]
 
-    if 256 % len(charSet) == 0:
-        div = int(256 / len(charSet))
-    else:
-        raise exceptionHandler("Invalid character set provided")
+    chars = [char + " " for char in charSet]
+    div = int(256 / len(chars))
 
     img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
     # iterate through the pixels and check brightness against charset
@@ -71,14 +68,12 @@ def getDifference(current, last, color):
     return output.getvalue()
 
 
-''' 
-NOTE TO SELF
-Change how this works, feed the image data directly to a 
-difference function and THEN turn the data into text. 
-Final output shouldnt change the export/import
-'''
 # processes a video into either pure text or color
 def processVideo(v, exceptionHandler, logger=None):
+    for char in v.charSet:
+        if len(char) != 1:
+            raise exceptionHandler("Invalid charset provided")
+
     count = 0
     while True:  # iterate through all frames
         is_grabbed, frame = v.videoCap.read()
@@ -109,15 +104,7 @@ def processVideo(v, exceptionHandler, logger=None):
             else:
                 imToText(frame, v.charSet, v.frames, exceptionHandler)
 
-            if v.skip and count % v.skip != 0 and len(v.frames) > 1:
-                v.frameDiffs.append(
-                    getDifference(
-                        v.frames[len(v.frames) - 1],
-                        v.frames[len(v.frames) - 2],
-                        v.color,
-                    )
-                )
-            elif len(v.frames) > 1:
+            if len(v.frames) > 1:
                 v.frameDiffs.append(
                     getDifference(
                         v.frames[len(v.frames) - 1],

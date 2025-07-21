@@ -12,16 +12,18 @@ class ImageError(Exception):
 
 class Image:
     def __init__(self):
+        #preferences
         self.color = False
-        self.textData = None
         self.charSet = [" ", "'", ":", ",", "-", "^", '"', "<", "c", "o", "O", "B", "W", "0", "%", "@"]
     
+        #internal handles
         self.img = None
+        self.textData = None
         self.width = None
         self.height = None
     
 
-    def load_image(self, path: str, dimensions: tuple[int, int] = None) -> None:
+    def from_file(self, path: str, dimensions: tuple[int, int] = None) -> None:
         path = PurePath(path)
         img_color = cv2.IMREAD_COLOR if self.color else cv2.IMREAD_GRAYSCALE
         img = cv2.imread(path, img_color)
@@ -39,14 +41,14 @@ class Image:
             self.height, self.width = self.img.shape
 
     #allows for resizing to fit within set dimensions while keeping aspect ratio 
-    def fit_to_dim(self, dimensions: tuple[int, int]) -> None: 
-        if self.width > dimensions[0]:
-            scale_percent = (dimensions[0] / self.width)
+    def fit_to_dim(self, width: int, height:int) -> None: 
+        if self.width > width:
+            scale_percent = (width / self.width)
             self.width = int(self.width * scale_percent)
             self.height = int(self.height * scale_percent)
 
-        if self.height > dimensions[1]:
-            scale_percent = (dimensions[1] / self.height)
+        if self.height > height:
+            scale_percent = (height / self.height)
             self.width = int(self.width * scale_percent)
             self.height = int(self.height * scale_percent)
         
@@ -58,10 +60,7 @@ class Image:
 
         if not self.color:
             chars = [char + " " for char in self.charSet]
-            if 256 % len(self.charSet) == 0:
-                div = int(256 / len(self.charSet))
-            else:
-                raise imageError("Invalid character set")
+            div = int(256 / len(self.charSet))
         else:
             last_color = [0, 0, 0]
 
